@@ -43,8 +43,12 @@ module.exports = function(Bookshelf) {
         expect(Bookshelf.model('Model').prototype.tableName).to.equal('records');
       });
 
-      it('throws when there is a name conflict', function() {
-        expect(Bookshelf.model.bind(Bookshelf, 'Model', Bookshelf.Model)).to.throw();
+      it('returns the model when there is a name conflict', function() {
+        expect(Bookshelf.model('Model', this.Model)).to.equal(this.ModelObj);
+      });
+
+      it('doesnt add model to ._models when there is a name conflict', function() {
+        expect(Object.keys(Bookshelf._models)).to.have.lengthOf(1);
       });
     });
 
@@ -76,8 +80,12 @@ module.exports = function(Bookshelf) {
         expect(Bookshelf.model('Model').noop).to.equal(noop);
       });
 
-      it('throws when there is a name conflict', function() {
-        expect(Bookshelf.model.bind(Bookshelf, 'Model', Bookshelf.Model)).to.throw();
+      it('returns the model when there is a name conflict', function() {
+        expect(Bookshelf.model('Model', this.Model)).to.equal(this.Model);
+      });
+
+      it('doesnt add model to ._models when there is a name conflict', function() {
+        expect(Object.keys(Bookshelf._models)).to.have.lengthOf(1);
       });
     });
 
@@ -193,6 +201,34 @@ module.exports = function(Bookshelf) {
         expect(Bookshelf.model('one')).to.equal(one);
         expect(Bookshelf.model('two')).to.equal(two);
         expect(Bookshelf.model('three')).to.equal(void 0);
+      });
+    });
+
+    describe('bookshelf.isModelLoaded', function() {
+      beforeEach(function() {
+        Bookshelf._models = {};
+      });
+
+      context('when there is models loaded', function() {
+        beforeEach(function() {
+          Bookshelf._models = {};
+
+          this.Model = Bookshelf.Model.extend({
+            tableName: 'records'
+          });
+
+          this.ModelObj = Bookshelf.model('Model', this.Model);
+        });
+
+        it('returns true', function() {
+          expect(Bookshelf.isModelLoaded('Model')).to.true
+        });
+      });
+
+      context('when there is no models loaded', function() {
+        it('returns false', function() {
+          expect(Bookshelf.isModelLoaded('Model')).to.false
+        });
       });
     });
   });
